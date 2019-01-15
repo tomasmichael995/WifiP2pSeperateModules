@@ -173,12 +173,27 @@ public class ClientActivity extends AppCompatActivity implements Client.OnClient
     protected void onDestroy() {
         super.onDestroy();
         stopClient();
+        terminateConnection();
     }
 
     private void stopClient() {
         if (client != null)
             client.stopExecution();
         client = null;
+    }
+
+    private void terminateConnection() {
+        manager.removeGroup(channel, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                Log.d(TAG, "Removed group initiated successfully.");
+            }
+
+            @Override
+            public void onFailure(int i) {
+                Log.d(TAG, "Removed group initiated failed.");
+            }
+        });
     }
 
     public void onDiscoverPeersClick(View view) {

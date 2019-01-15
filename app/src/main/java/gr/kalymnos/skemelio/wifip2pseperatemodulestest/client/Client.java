@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketException;
 
 import gr.kalymnos.skemelio.wifip2pseperatemodulestest.MainActivity;
 import gr.kalymnos.skemelio.wifip2pseperatemodulestest.server.Server;
@@ -60,7 +61,7 @@ public class Client extends Thread {
             in.close();
             out.close();
             socket.close();
-            Log.d(TAG,"Closed streams and socket.");
+            Log.d(TAG, "Closed streams and socket.");
         } catch (IOException e) {
             Log.e(TAG, "Error closing socket.", e);
         }
@@ -111,18 +112,16 @@ public class Client extends Thread {
                 int response = in.read();
                 if (response == -1) {
                     callback.onClientConnectionError("Server terminated connection");
-                    closeStreamsAndSocket();
                     break;
                 } else {
                     callback.onResponseRead(response);
                 }
+            } catch (SocketException e) {
+                // Raised up when socket is closed (or its streams).
+                Log.d(TAG, "SocketException and terminating client");
+                break;
             } catch (IOException e) {
-                if (socket.isClosed()) {
-                    Log.d(TAG, "Terminating client.");
-                    break;
-                } else {
-                    Log.e(TAG, "Error reading server response.", e);
-                }
+                Log.e(TAG, "Error reading server response.", e);
             }
         }
     }
