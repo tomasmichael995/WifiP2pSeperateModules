@@ -166,8 +166,13 @@ public class Server extends Thread {
             while (true) {
                 try {
                     int response = in.read();
-                    Log.d(TAG, "Read client response: " + response);
-                    callback.onMessageReceived(response);
+                    if (response == -1) {
+                        Log.d(TAG, "Client disconnected.");
+                        break;
+                    } else {
+                        Log.d(TAG, "Read client response: " + response);
+                        callback.onMessageReceived(response);
+                    }
                 } catch (IOException e) {
                     if (socket.isClosed()) {
                         Log.d(TAG, "Terminating ServerThread.");

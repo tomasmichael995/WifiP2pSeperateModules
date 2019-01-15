@@ -108,7 +108,12 @@ public class Client extends Thread {
         while (true) {
             try {
                 int response = in.read();
-                callback.onResponseRead(response);
+                if (response == -1) {
+                    callback.onClientConnectionError("Server terminated connection");
+                    break;
+                } else {
+                    callback.onResponseRead(response);
+                }
             } catch (IOException e) {
                 if (socket.isClosed()) {
                     Log.d(TAG, "Terminating client.");
