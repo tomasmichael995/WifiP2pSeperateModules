@@ -23,6 +23,8 @@ public class Server extends Thread {
     private List<ServerThread> threads = new ArrayList<>();
     private OnServerConnectionListener callback;
 
+    private boolean started = false;
+
     public interface OnServerConnectionListener {
         void onClientConnected();
 
@@ -45,6 +47,7 @@ public class Server extends Thread {
 
     @Override
     public void run() {
+        started = true;
         while (!Thread.currentThread().isInterrupted()) {
             ServerThread serverThread = new ServerThread(getAcceptedSocket());
             threads.add(serverThread);
@@ -93,6 +96,10 @@ public class Server extends Thread {
 
     public void setOnServerConnectionListener(OnServerConnectionListener listener) {
         callback = listener;
+    }
+
+    public boolean hasStarted() {
+        return started;
     }
 
     private class ServerThread extends Thread {

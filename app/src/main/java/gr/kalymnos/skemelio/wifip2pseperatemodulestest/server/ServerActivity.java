@@ -58,10 +58,12 @@ public class ServerActivity extends AppCompatActivity implements Server.OnServer
     private void initializeConnectionInfoListener() {
         connectionInfoListener = info -> {
             if (info.groupFormed && info.isGroupOwner) {
-                String msg = "A wifi direct group formed and this device is the group owner";
-                Log.d(TAG, msg);
-                status.setText(msg);
-                server.start();
+                if (!server.hasStarted()) {
+                    String msg = "A wifi direct group formed and this device is the group owner";
+                    Log.d(TAG, msg);
+                    status.setText(msg);
+                    server.start();
+                }
             }
         };
     }
