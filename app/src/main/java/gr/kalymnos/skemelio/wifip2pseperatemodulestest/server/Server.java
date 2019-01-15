@@ -48,6 +48,7 @@ public class Server extends Thread {
     @Override
     public void run() {
         started = true;
+        Log.d(TAG,"Server started.");
         while (!Thread.currentThread().isInterrupted()) {
             ServerThread serverThread = new ServerThread(getAcceptedSocket());
             threads.add(serverThread);
