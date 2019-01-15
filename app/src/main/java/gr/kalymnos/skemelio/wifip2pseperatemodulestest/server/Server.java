@@ -5,6 +5,7 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -16,7 +17,7 @@ import gr.kalymnos.skemelio.wifip2pseperatemodulestest.MainActivity;
 
 public class Server extends Thread {
     private static final String TAG = MainActivity.TAG + " Server";
-    public static final int LOCAL_PORT = 8885;
+    public static final int LOCAL_PORT = 8888;
     private static final int MESSAGE = 1453;
 
     private ServerSocket serverSocket;
@@ -48,24 +49,24 @@ public class Server extends Thread {
     @Override
     public void run() {
         started = true;
-        Log.d(TAG,"Server started.");
-        while (!Thread.currentThread().isInterrupted()) {
-            ServerThread serverThread = new ServerThread(getAcceptedSocket());
-            threads.add(serverThread);
-            serverThread.start();
-            Log.d(TAG, "A client was accepted");
-            callback.onClientConnected();
+        while (true) {
+            Socket socket;
+            try {
+                socket = serverSocket.accept();
+                ServerThread serverThread = new ServerThread(socket);
+                serverThread.start();
+                threads.add(serverThread);
+                callback.onClientConnected();
+                Log.d(TAG, "A client was accepted");
+            } catch (InterruptedIOException e) {
+                Log.d(TAG, "Interrupted.");
+                break;
+            } catch (IOException e) {
+                Log.e(TAG, "Error accepting socket.", e);
+                break;
+            }
         }
         releaseResources();
-    }
-
-    private Socket getAcceptedSocket() {
-        try {
-            return serverSocket.accept();
-        } catch (IOException e) {
-            Log.e(TAG, "Error accepting socket.", e);
-            return null;
-        }
     }
 
     private void releaseResources() {
@@ -143,11 +144,14 @@ public class Server extends Thread {
         }
 
         private void readResponsesUntilInterrupted() {
-            while (!Thread.currentThread().isInterrupted()) {
+            while (true) {
                 try {
                     int response = in.read();
                     Log.d(TAG, "Read client response: " + response);
                     callback.onMessageReceived(response);
+                } catch (InterruptedIOException e) {
+                    Log.d(TAG, "Interrupted.");
+                    break;
                 } catch (IOException e) {
                     Log.e(TAG, "Error while reading or writing response", e);
                 }

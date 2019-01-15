@@ -5,6 +5,7 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -91,10 +92,13 @@ public class Client extends Thread {
     }
 
     private void readUntilInterrupted() {
-        while (!Thread.currentThread().isInterrupted()) {
+        while (true) {
             try {
                 int response = in.read();
                 callback.onResponseRead(response);
+            } catch (InterruptedIOException e) {
+                Log.d(TAG, "Interrupted.");
+                break;
             } catch (IOException e) {
                 Log.e(TAG, "Error reading server response.", e);
             }

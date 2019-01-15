@@ -127,17 +127,6 @@ public class ServerActivity extends AppCompatActivity implements Server.OnServer
                 Log.d(TAG, "Group could not be removed.");
             }
         });
-        manager.cancelConnect(channel, new WifiP2pManager.ActionListener() {
-            @Override
-            public void onSuccess() {
-                Log.d(TAG, "Connection canceled initiation success.");
-            }
-
-            @Override
-            public void onFailure(int i) {
-                Log.d(TAG, "Connection canceled failed.");
-            }
-        });
     }
 
     public void onMessageClick(View view) {
