@@ -60,6 +60,7 @@ public class Client extends Thread {
             in.close();
             out.close();
             socket.close();
+            Log.d(TAG,"Closed streams and socket.");
         } catch (IOException e) {
             Log.e(TAG, "Error closing socket.", e);
         }
@@ -110,6 +111,7 @@ public class Client extends Thread {
                 int response = in.read();
                 if (response == -1) {
                     callback.onClientConnectionError("Server terminated connection");
+                    closeStreamsAndSocket();
                     break;
                 } else {
                     callback.onResponseRead(response);

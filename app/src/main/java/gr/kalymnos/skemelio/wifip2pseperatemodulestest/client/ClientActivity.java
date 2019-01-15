@@ -133,17 +133,19 @@ public class ClientActivity extends AppCompatActivity implements Client.OnClient
     private void initializeConnectionInfoListener() {
         connectionInfoListener = info -> {
             if (info.groupFormed && !info.isGroupOwner) {
-                initializeClient(info);
-                client.start();
+                if (client != null) {
+                    return;
+                } else {
+                    initializeClient(info);
+                    client.start();
+                }
             }
         };
     }
 
     private void initializeClient(WifiP2pInfo info) {
-        if (client == null) {
-            client = new Client(info.groupOwnerAddress);
-            client.setOnClientConnectionListener(this);
-        }
+        client = new Client(info.groupOwnerAddress);
+        client.setOnClientConnectionListener(this);
     }
 
     @Override
@@ -199,7 +201,7 @@ public class ClientActivity extends AppCompatActivity implements Client.OnClient
 
     @Override
     public void onClientConnected() {
-        String text = "Client connected";
+        String text = "Connected to group";
         Log.d(TAG, text);
         runOnUiThread(() -> status.setText(text));
     }
@@ -214,6 +216,7 @@ public class ClientActivity extends AppCompatActivity implements Client.OnClient
     public void onClientConnectionError(String errorLog) {
         Log.d(TAG, "Client connection error: " + errorLog);
         runOnUiThread(() -> status.setText("Connection error:\n" + errorLog));
+        finish();
     }
 
     private class WifiDirectReceiver extends BroadcastReceiver {
