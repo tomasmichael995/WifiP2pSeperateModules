@@ -116,11 +116,13 @@ public class Client extends Thread {
     }
 
     public void sendMessage() {
-        try {
-            out.write(MESSAGE);
-        } catch (IOException e) {
-            Log.e(TAG, "Error sending message.", e);
-        }
+        new Thread(() -> {
+            try {
+                out.write(MESSAGE);
+            } catch (IOException e) {
+                Log.e(TAG, "Error sending message.", e);
+            }
+        }).start();
     }
 
     public void setOnClientConnectionListener(@NonNull OnClientConnectionListener listener) {

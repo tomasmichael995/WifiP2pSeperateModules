@@ -116,6 +116,17 @@ public class ServerActivity extends AppCompatActivity implements Server.OnServer
     protected void onDestroy() {
         super.onDestroy();
         server.interrupt();
+        manager.removeGroup(channel, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                Log.d(TAG, "Group removed.");
+            }
+
+            @Override
+            public void onFailure(int i) {
+                Log.d(TAG, "Group could not be removed.");
+            }
+        });
     }
 
     public void onMessageClick(View view) {

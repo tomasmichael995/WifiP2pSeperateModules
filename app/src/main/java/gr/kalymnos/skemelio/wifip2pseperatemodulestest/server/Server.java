@@ -162,11 +162,13 @@ public class Server extends Thread {
         }
 
         void sendMessage() {
-            try {
-                out.write(MESSAGE);
-            } catch (IOException e) {
-                Log.e(TAG, "Error sending message.", e);
-            }
+            new Thread(() -> {
+                try {
+                    out.write(MESSAGE);
+                } catch (IOException e) {
+                    Log.e(TAG, "Error sending message.", e);
+                }
+            }).start();
         }
     }
 }
