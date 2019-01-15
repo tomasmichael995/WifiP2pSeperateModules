@@ -202,19 +202,19 @@ public class ClientActivity extends AppCompatActivity implements Client.OnClient
     public void onClientConnected() {
         String text = "Client connected";
         Log.d(TAG, text);
-        status.setText(text);
+        runOnUiThread(() -> status.setText(text));
     }
 
     @Override
     public void onResponseRead(int response) {
         Log.d(TAG, "Received response from server: " + response + ".");
-        status.append("\n Received response " + response);
+        runOnUiThread(() -> status.append("\n Received response " + response));
     }
 
     @Override
     public void onClientConnectionError(String errorLog) {
         Log.d(TAG, "Client connection error: " + errorLog);
-        status.setText("Connection error:\n" + errorLog);
+        runOnUiThread(() -> status.setText("Connection error:\n" + errorLog));
     }
 
     private class WifiDirectReceiver extends BroadcastReceiver {

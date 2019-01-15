@@ -124,14 +124,14 @@ public class ServerActivity extends AppCompatActivity implements Server.OnServer
     public void onClientConnected() {
         String msg = "A client connected.";
         Log.d(TAG, msg);
-        status.setText(msg);
+        runOnUiThread(() -> status.setText(msg));
     }
 
     @Override
     public void onMessageReceived(int message) {
         String text = "Message received from a client: " + message;
         Log.d(TAG, text);
-        status.append("\n" + text);
+        runOnUiThread(() -> status.append("\n" + text));
     }
 
     private class WifiDirectReceiver extends BroadcastReceiver {
