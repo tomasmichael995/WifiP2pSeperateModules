@@ -5,7 +5,6 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -52,12 +51,26 @@ public class Client extends Thread {
         }
     }
 
+    public void stopExecution() {
+        closeStreamsAndSocket();
+    }
+
+    private void closeStreamsAndSocket() {
+        try {
+            in.close();
+            out.close();
+            socket.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Error closing socket.", e);
+        }
+    }
+
     @Override
     public void run() {
         connectSocket();
         initializeStreams();
         readUntilInterrupted();
-        tearDown();
+        callback = null;
     }
 
     private void connectSocket() {
@@ -96,26 +109,14 @@ public class Client extends Thread {
             try {
                 int response = in.read();
                 callback.onResponseRead(response);
-            } catch (InterruptedIOException e) {
-                Log.d(TAG, "Interrupted.");
-                break;
             } catch (IOException e) {
-                Log.e(TAG, "Error reading server response.", e);
+                if (socket.isClosed()) {
+                    Log.d(TAG, "Terminating client.");
+                    break;
+                } else {
+                    Log.e(TAG, "Error reading server response.", e);
+                }
             }
-        }
-    }
-
-    private void tearDown() {
-        Log.d(TAG, "Client.tearDown() called.");
-        closeSocket();
-        callback = null;
-    }
-
-    private void closeSocket() {
-        try {
-            socket.close();
-        } catch (IOException e) {
-            Log.e(TAG, "Error closing socket.", e);
         }
     }
 

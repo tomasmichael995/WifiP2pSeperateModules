@@ -10,6 +10,7 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,6 +47,21 @@ public class Server extends Thread {
         }
     }
 
+    public void stopExecution() {
+        closeServerSocket();
+    }
+
+    private void closeServerSocket() {
+        // This triggers a SocketException
+        // https://stackoverflow.com/questions/2983835/how-can-i-interrupt-a-serversocket-accept-method
+        try {
+            serverSocket.close();
+            Log.d(TAG, "Server socket closed.");
+        } catch (IOException e) {
+            Log.e(TAG, "Error closing server socket.", e);
+        }
+    }
+
     @Override
     public void run() {
         started = true;
@@ -58,12 +74,11 @@ public class Server extends Thread {
                 threads.add(serverThread);
                 callback.onClientConnected();
                 Log.d(TAG, "A client was accepted");
-            } catch (InterruptedIOException e) {
-                Log.d(TAG, "Interrupted.");
+            } catch (SocketException e) {
+                Log.d(TAG, "Closing socket and exiting loop.");
                 break;
             } catch (IOException e) {
                 Log.e(TAG, "Error accepting socket.", e);
-                break;
             }
         }
         releaseResources();
@@ -71,23 +86,13 @@ public class Server extends Thread {
 
     private void releaseResources() {
         Log.d(TAG, "Server.releaseResources() called");
-        closeServerSocket();
         closeServerThreads();
         callback = null;
     }
 
-    private void closeServerSocket() {
-        try {
-            serverSocket.close();
-            Log.d(TAG, "Server socket closed.");
-        } catch (IOException e) {
-            Log.e(TAG, "Error closing server socket.", e);
-        }
-    }
-
     private void closeServerThreads() {
         for (ServerThread thread : threads)
-            thread.interrupt();
+            thread.stopThread();
         threads.clear();
     }
 
@@ -137,10 +142,24 @@ public class Server extends Thread {
             }
         }
 
+
+        public void stopThread() {
+            closeSocket();
+        }
+
+        private void closeSocket() {
+            // This triggers a SocketException
+            // https://stackoverflow.com/questions/2983835/how-can-i-interrupt-a-serversocket-accept-method
+            try {
+                socket.close();
+            } catch (IOException e) {
+                Log.e(TAG, "Error while closing socket.", e);
+            }
+        }
+
         @Override
         public void run() {
             readResponsesUntilInterrupted();
-            closeSocket();
         }
 
         private void readResponsesUntilInterrupted() {
@@ -149,20 +168,14 @@ public class Server extends Thread {
                     int response = in.read();
                     Log.d(TAG, "Read client response: " + response);
                     callback.onMessageReceived(response);
-                } catch (InterruptedIOException e) {
-                    Log.d(TAG, "Interrupted.");
-                    break;
                 } catch (IOException e) {
-                    Log.e(TAG, "Error while reading or writing response", e);
+                    if (socket.isClosed()) {
+                        Log.d(TAG, "Terminating ServerThread.");
+                        break;
+                    } else {
+                        Log.e(TAG, "Error when in.read()", e);
+                    }
                 }
-            }
-        }
-
-        private void closeSocket() {
-            try {
-                socket.close();
-            } catch (IOException e) {
-                Log.e(TAG, "Error while closing socket.", e);
             }
         }
 

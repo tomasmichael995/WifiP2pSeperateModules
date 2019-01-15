@@ -16,7 +16,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -171,12 +170,12 @@ public class ClientActivity extends AppCompatActivity implements Client.OnClient
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        interruptClient();
+        stopClient();
     }
 
-    private void interruptClient() {
+    private void stopClient() {
         if (client != null)
-            client.interrupt();
+            client.stopExecution();
         client = null;
     }
 

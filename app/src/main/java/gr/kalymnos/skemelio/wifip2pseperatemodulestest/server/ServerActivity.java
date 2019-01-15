@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.NetworkInfo;
-import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -115,7 +114,7 @@ public class ServerActivity extends AppCompatActivity implements Server.OnServer
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        server.interrupt();
+        server.stopExecution();
         manager.removeGroup(channel, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
