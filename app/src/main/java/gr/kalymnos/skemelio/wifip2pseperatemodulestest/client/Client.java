@@ -40,8 +40,6 @@ public class Client extends Thread {
     private void initializeFields(InetAddress groupOwnerAddress) {
         this.groupOwnerAddress = groupOwnerAddress;
         initializeSocket();
-        initializeInputStream();
-        initializeOutputStream();
     }
 
     private void initializeSocket() {
@@ -51,6 +49,29 @@ public class Client extends Thread {
         } catch (IOException e) {
             Log.e(TAG, "Error binding socket.", e);
         }
+    }
+
+    @Override
+    public void run() {
+        connectSocket();
+        initializeStreams();
+        readUntilInterrupted();
+        tearDown();
+    }
+
+    private void connectSocket() {
+        try {
+            socket.connect((new InetSocketAddress(groupOwnerAddress, Server.LOCAL_PORT)), TIMEOUT_MILLI);
+            callback.onClientConnected();
+        } catch (IOException e) {
+            Log.e(TAG, "Error connecting socket to group owner.", e);
+            callback.onClientConnectionError(e.getMessage());
+        }
+    }
+
+    private void initializeStreams() {
+        initializeInputStream();
+        initializeOutputStream();
     }
 
     private void initializeInputStream() {
@@ -66,23 +87,6 @@ public class Client extends Thread {
             out = socket.getOutputStream();
         } catch (IOException e) {
             Log.e(TAG, "Error creating output stream from socket.", e);
-        }
-    }
-
-    @Override
-    public void run() {
-        connectSocket();
-        readUntilInterrupted();
-        tearDown();
-    }
-
-    private void connectSocket() {
-        try {
-            socket.connect((new InetSocketAddress(groupOwnerAddress, Server.LOCAL_PORT)), TIMEOUT_MILLI);
-            callback.onClientConnected();
-        } catch (IOException e) {
-            Log.e(TAG, "Error connecting socket to group owner.", e);
-            callback.onClientConnectionError(e.getMessage());
         }
     }
 
